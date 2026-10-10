@@ -120,6 +120,16 @@ tasks.register('checkReleaseFiles') {
         if (!luna.containsKey('esr_oddisz')) problems << 'LunaLib icon is not keyed by the mod id'
         luna.each { modId, config -> if (!file(config.iconPath).isFile()) problems << "LunaLib icon missing: ${config.iconPath}" }
 
+        // LunaLib draws every name, description and text through String.format, and the game formats
+        // hull mod descriptions the same way: a stray percent sign crashes the screen that shows it.
+        if (file('data/config/LunaSettings.csv').getText('UTF-8').contains('%'))
+            problems << 'LunaSettings.csv contains a percent sign; LunaLib formats its text and crashes on it'
+        esroParseCsv(file('data/hullmods/hull_mods.csv')).drop(1).each { row ->
+            row.each { cell ->
+                if ((cell =~ /%(?![s%])/).find()) problems << "hull_mods.csv has a bare percent sign in: ${cell.take(60)}"
+            }
+        }
+
         problems.addAll(esroCheckCsvColumns(file('data/config/LunaSettings.csv')))
         problems.addAll(esroCheckCsvColumns(file('data/campaign/special_items.csv')))
         problems.addAll(esroCheckCsvColumns(file('data/hullmods/hull_mods.csv')))

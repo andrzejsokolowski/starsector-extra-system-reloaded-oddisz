@@ -61,6 +61,9 @@ Hence the locked rule below.
 - `TooltipMakerAPI` and `TextPanelAPI` `addPara` overloads that take highlights run `String.format`;
   the plain ones do not. Double any literal `%` spliced into a highlighted format (`WorkshopDialog.esc`).
   The checks fail on any highlighted text that does not format.
+- LunaLib draws every field name, description and text in `LunaSettings.csv` through that same
+  formatting, so a percent sign there crashes the settings page (0.1.0 did, on the Hull Quality tab).
+  Write "percent" instead; `checkReleaseFiles` rejects any `%` in that file.
 - Story point options: the game spends the point on confirmation, before `optionSelected` runs.
   Give it back if the purchase then fails.
 - Only vanilla sound ids may be played; the checks verify the ones in use.

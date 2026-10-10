@@ -6,10 +6,10 @@ esro_overclock_levels,Overclock levels,Int,5,,"Extra levels past the maximum. Ea
 esro_strength,Upgrade strength,Double,1,,"Multiplies the effect of every upgrade. 2 doubles every bonus; 0.5 halves it. Reductions never go below their floor, so supply use and the like cannot reach zero.",0.1,10,Upgrades
 esro_header_quality,Quality Header,Header,Hull quality,,,,,Hull Quality
 esro_quality_text,Quality Text,Text,"Every hull has a quality that multiplies the effect of its upgrades. Shipyards (Heavy Industry, Orbital Works and their modded equivalents) can raise it; each improvement costs more than the last. A ship's starting quality is fixed the first time the bay works on it.",,,,,Hull Quality
-esro_random_quality,Random starting quality,Boolean,true,,"Each hull starts with its own quality between the two values below. Switch off to start every hull at 100%.",,,Hull Quality
-esro_quality_min,Lowest starting quality,Double,0.8,,"The worst a hull can roll. 1 means 100%.",0.1,5,Hull Quality
-esro_quality_max_start,Highest starting quality,Double,1.2,,"The best a hull can roll. 1 means 100%.",0.1,5,Hull Quality
-esro_quality_cap,Highest quality,Double,2,,"The most a shipyard can raise a hull's quality to. 2 means 200%: every upgrade works twice as hard.",1,10,Hull Quality
+esro_random_quality,Random starting quality,Boolean,true,,"Each hull starts with its own quality between the two values below. Switch off to start every hull at normal quality (1).",,,Hull Quality
+esro_quality_min,Lowest starting quality,Double,0.8,,"The worst a hull can roll. 1 is normal quality; 0.8 makes upgrades 20 percent weaker.",0.1,5,Hull Quality
+esro_quality_max_start,Highest starting quality,Double,1.2,,"The best a hull can roll. 1 is normal quality; 1.2 makes upgrades 20 percent stronger.",0.1,5,Hull Quality
+esro_quality_cap,Highest quality,Double,2,,"The most a shipyard can raise a hull's quality to. At 2, every upgrade works twice as hard.",1,10,Hull Quality
 esro_header_augments,Augments Header,Header,Augments,,,,,Augments
 esro_augments_text,Augments Text,Text,"Augments are rare devices with an effect of their own. They turn up in salvage and can be fabricated at markets with Orbital Works. A ship holds as many as its hull size allows.",,,,,Augments
 esro_slots_frigate,Frigate slots,Int,1,,Augment slots on a frigate.,0,10,Augments
