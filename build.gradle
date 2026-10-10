@@ -79,8 +79,9 @@ tasks.register('checkVersionMetadata') {
             throw new GradleException('Both update URLs must point to the published esr_oddisz.version file')
         if (remote.directDownloadURL != downloadUrl)
             throw new GradleException('The update download must point to the ExtraSystemReloadedOddiszEdition.zip release asset')
-        if (info.modThreadId?.toString() != remote.modThreadId?.toString())
-            throw new GradleException('mod_info.json and the .version file must name the same forum topic')
+        if (!(info.modThreadId instanceof String) || info.modThreadId != '36143'
+                || !(remote.modThreadId instanceof Number) || remote.modThreadId.toString() != '36143')
+            throw new GradleException('Both metadata files must link to forum topic 36143 (a string in mod_info.json, a number in the .version file)')
         if (info.gameVersion != remote.starsectorVersion)
             throw new GradleException('The supported Starsector versions do not match')
         if (registrationFile.readLines('UTF-8').findAll { !it.trim().isEmpty() } != ['version file', 'esr_oddisz.version'])

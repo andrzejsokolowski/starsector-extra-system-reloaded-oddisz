@@ -6,11 +6,10 @@ For requested gameplay changes and bug fixes, complete the release workflow unle
 Questions, investigations, and instruction-only changes do not require a new version or tag.
 Respect tool approval decisions. These instructions do not change sandbox permissions.
 
-## First release
+## Releases
 
-No GitHub Release exists yet and the GitHub repository is private. Andrzej decides when the first
-release ships, after he has tested 0.1.0 in game. Until then, build and verify the local ZIP and push
-commits, but do not tag, make the repository public or publish a release without his go-ahead.
+Andrzej approved the first public release, 0.1.0, on 2026-10-10. The repository is public. From now on
+every requested change follows the release workflow below without asking again.
 
 ## Origin
 
@@ -73,9 +72,9 @@ Hence the locked rule below.
 3. Run ./gradlew releaseZip to build, check, and package ExtraSystemReloadedOddiszEdition.zip.
 4. Make sure that the ZIP contains the updated metadata, current JAR, data and graphics.
 5. Commit the completed change on main with the existing personal Git identity.
-6. Once the first release is approved: tag the commit v<version> and push the commit and tag to the
-   personal GitHub origin, create a draft GitHub Release for that exact tag, attach the tested ZIP,
-   publish it, and mark a new stable release as latest unless the user requests otherwise.
+6. Tag the commit v<version> and push the commit and tag to the personal GitHub origin, create a draft
+   GitHub Release for that exact tag, attach the tested ZIP, publish it, and mark a new stable release
+   as latest unless the user requests otherwise.
 7. Make sure that the public version file and the downloaded ZIP report the tagged version, and
    compare the downloaded ZIP's SHA-256 hash with the tested local ZIP.
 8. Give the user the release link and local ZIP location.
@@ -89,8 +88,10 @@ Do not overwrite published assets, replace tags, or mark older releases as lates
 ## Update metadata
 
 Keep mod_info.json, esr_oddisz.version, and data/config/version/version_files.csv consistent
-(`gradlew check` enforces it). There is no forum topic yet. When one exists, add its number to both
-metadata files (a string in mod_info.json, a number in the .version file). Never invent one.
+(`gradlew check` enforces it). Use forum topic 36143 in both metadata files: a string in mod_info.json,
+a number in the .version file.
+
+https://fractalsoftworks.com/forum/index.php?topic=36143.0
 Use this update URL in updateCheckURL and masterVersionFile:
 
 https://raw.githubusercontent.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/main/esr_oddisz.version
@@ -101,6 +102,5 @@ https://github.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/rel
 
 ## Release notes: changelog only
 
-Write only the changelog since the previous published GitHub Release. For the first release, a short
-list of what the mod does is the changelog. No dependency reminders, installation guides, forum links,
+Write only the changelog since the previous published GitHub Release (the first was v0.1.0). No dependency reminders, installation guides, forum links,
 build narration or test-status statements on the release page.
