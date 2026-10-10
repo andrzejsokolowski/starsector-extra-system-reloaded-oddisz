@@ -16,6 +16,7 @@ import com.fs.starfarer.api.campaign.FleetMemberPickerListener;
 import com.fs.starfarer.api.campaign.InteractionDialogAPI;
 import com.fs.starfarer.api.campaign.InteractionDialogPlugin;
 import com.fs.starfarer.api.campaign.OptionPanelAPI;
+import com.fs.starfarer.api.campaign.OptionPanelAPI.OptionTooltipCreator;
 import com.fs.starfarer.api.campaign.SpecialItemData;
 import com.fs.starfarer.api.campaign.TextPanelAPI;
 import com.fs.starfarer.api.campaign.econ.MarketAPI;
@@ -34,6 +35,7 @@ import com.fs.starfarer.api.ui.LabelAPI;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 
+import esroddisz.Faults;
 import esroddisz.Pricing;
 import esroddisz.Quality;
 import esroddisz.Settings;
@@ -116,8 +118,8 @@ public class WorkshopDialog implements InteractionDialogPlugin {
             select(id);
         } catch (RuntimeException e) {
             Global.getLogger(WorkshopDialog.class).error("Extra Systems bay failed on option " + id, e);
-            text.addPara("The engineers report a fault in the bay's systems. Nothing was charged for that step.",
-                    Misc.getNegativeHighlightColor());
+            text.addPara("The engineers report a fault in the bay's systems, and the last order may not have "
+                    + "gone through. Please report it with your starsector.log.", Misc.getNegativeHighlightColor());
         }
     }
 
@@ -241,7 +243,12 @@ public class WorkshopDialog implements InteractionDialogPlugin {
                     public void pickedFleetMembers(List<FleetMemberAPI> members) {
                         if (members == null || members.isEmpty()) return;
                         member = members.get(0);
-                        showShip();
+                        try {
+                            showShip();
+                        } catch (RuntimeException e) {
+                            Faults.report("opening a ship in the bay", e);
+                            showMain(false);
+                        }
                     }
 
                     public void cancelledFleetMemberPicking() {
@@ -338,8 +345,8 @@ public class WorkshopDialog implements InteractionDialogPlugin {
                     + Misc.getDGSCredits(refundFor(u, level)) + ")", option);
             final Upgrade upgrade = u;
             final int current = level;
-            options.addOptionTooltipAppender(option, (tooltip, hadOtherText) ->
-                    addEffectList(tooltip, upgrade, current, current - 1, hadOtherText ? 10f : 0f));
+            options.addOptionTooltipAppender(option, tip((tooltip, hadOtherText) ->
+                    addEffectList(tooltip, upgrade, current, current - 1, hadOtherText ? 10f : 0f)));
         }
         addUndoOption();
         options.addOption("Back", BACK_TO_SHIP);
@@ -375,14 +382,14 @@ public class WorkshopDialog implements InteractionDialogPlugin {
             if (installed.contains(a)) {
                 String option = UNINSTALL + a.name();
                 options.addOption("Remove " + a.getName(), option);
-                options.addOptionTooltipAppender(option, (tooltip, had) -> addAugmentDescription(tooltip, augment, had ? 10f : 0f));
+                options.addOptionTooltipAppender(option, tip((tooltip, had) -> addAugmentDescription(tooltip, augment, had ? 10f : 0f)));
                 continue;
             }
             int owned = augmentsOwned(a);
             if (owned <= 0) continue;
             String option = INSTALL + a.name();
             options.addOption("Install " + a.getName() + " (" + owned + " owned)", option);
-            options.addOptionTooltipAppender(option, (tooltip, had) -> addAugmentDescription(tooltip, augment, had ? 10f : 0f));
+            options.addOptionTooltipAppender(option, tip((tooltip, had) -> addAugmentDescription(tooltip, augment, had ? 10f : 0f)));
             if (!a.canInstallOn(hull, stats)) {
                 options.setEnabled(option, false);
                 options.setTooltip(option, a.getRequirementText());
@@ -410,10 +417,10 @@ public class WorkshopDialog implements InteractionDialogPlugin {
             String option = FAB + a.name();
             final Bill bill = Payment.bill(method, fabricationPrice(a), a.getMaterials(), true);
             options.addOption("Fabricate " + a.getName() + " (" + billSummary(bill) + ")", option);
-            options.addOptionTooltipAppender(option, (tooltip, had) -> {
+            options.addOptionTooltipAppender(option, tip((tooltip, had) -> {
                 addAugmentDescription(tooltip, augment, had ? 10f : 0f);
                 addBill(tooltip, bill, 10f);
-            });
+            }));
             if (!Payment.canAfford(bill, cargo(), storage())) options.setEnabled(option, false);
         }
         addPayOption();
@@ -457,7 +464,7 @@ public class WorkshopDialog implements InteractionDialogPlugin {
         if (level >= cap) {
             options.addOption(u.getName() + " " + level + "/" + max + " (fully upgraded)", option);
             options.setEnabled(option, false);
-            options.addOptionTooltipAppender(option, (tooltip, had) -> addEffectList(tooltip, upgrade, current, current, had ? 10f : 0f));
+            options.addOptionTooltipAppender(option, tip((tooltip, had) -> addEffectList(tooltip, upgrade, current, current, had ? 10f : 0f)));
             return;
         }
 
@@ -469,7 +476,7 @@ public class WorkshopDialog implements InteractionDialogPlugin {
                 : u.getName() + " " + level + "/" + max + " to " + (level + 1) + " (" + billSummary(bill) + ")";
         options.addOption(label, option);
         final boolean isOverclock = overclock;
-        options.addOptionTooltipAppender(option, (tooltip, had) -> {
+        options.addOptionTooltipAppender(option, tip((tooltip, had) -> {
             tooltip.addPara(upgrade.getDescription(), had ? 10f : 0f);
             addEffectList(tooltip, upgrade, current, current + 1, 10f);
             addBill(tooltip, bill, 10f);
@@ -478,7 +485,7 @@ public class WorkshopDialog implements InteractionDialogPlugin {
                         Misc.getStoryOptionColor(), String.valueOf(Settings.maxLevel()));
                 tooltip.addStoryPointUseInfo(10f, 1, 0f, true);
             }
-        });
+        }));
         boolean affordable = Payment.canAfford(bill, cargo(), storage());
         if (overclock) {
             makeStoryOption(option);
@@ -517,14 +524,14 @@ public class WorkshopDialog implements InteractionDialogPlugin {
         options.addOption("Improve hull quality to " + Quality.percent(next) + " (" + billSummary(bill) + ")", QUALITY);
         final float from = q;
         final float to = next;
-        options.addOptionTooltipAppender(QUALITY, (tooltip, had) -> {
+        options.addOptionTooltipAppender(QUALITY, tip((tooltip, had) -> {
             tooltip.addPara("Hull quality multiplies the effect of every upgrade on this ship. "
                     + "From %s to %s.", had ? 10f : 0f, new Color[]{Quality.color(from), Quality.color(to)},
                     Quality.describe(from), Quality.describe(to));
             tooltip.addPara("Each improvement costs more than the last. The highest quality is %s.", 4f,
                     Misc.getHighlightColor(), Quality.percent(Settings.qualityCap()));
             addBill(tooltip, bill, 10f);
-        });
+        }));
         if (!Payment.canAfford(bill, cargo(), storage())) options.setEnabled(QUALITY, false);
     }
 
@@ -729,12 +736,31 @@ public class WorkshopDialog implements InteractionDialogPlugin {
         undo.push(new Undo(label, action));
     }
 
-    /** After any change: put the hull mod on or off, recompute stats and redraw the ship. */
+    /**
+     * After any change: put the hull mod on or off, recompute stats and redraw the ship. The record is
+     * already updated and paid for; a failure here must not stop the purchase from completing, and the
+     * background check puts the hull mod right within a second anyway.
+     */
     private void shipChanged(FleetMemberAPI ship) {
         if (ship == null) return;
-        HullmodSync.sync(ship);
-        ship.updateStats();
-        if (ship == member && screen != Screen.MAIN) dialog.getVisualPanel().showFleetMemberInfo(ship);
+        try {
+            HullmodSync.sync(ship);
+            ship.updateStats();
+            if (ship == member && screen != Screen.MAIN) dialog.getVisualPanel().showFleetMemberInfo(ship);
+        } catch (RuntimeException e) {
+            Faults.report("refreshing a ship after a change in the bay", e);
+        }
+    }
+
+    /** A popup that logs and shows nothing rather than crashing the game if it fails. */
+    private static OptionTooltipCreator tip(OptionTooltipCreator creator) {
+        return (tooltip, hadOtherText) -> {
+            try {
+                creator.createTooltip(tooltip, hadOtherText);
+            } catch (RuntimeException e) {
+                Faults.report("a bay popup", e);
+            }
+        };
     }
 
     private void leave() {

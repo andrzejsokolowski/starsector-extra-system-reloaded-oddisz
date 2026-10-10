@@ -11,6 +11,7 @@ import com.fs.starfarer.api.combat.ShipAPI.HullSize;
 import com.fs.starfarer.api.ui.TooltipMakerAPI;
 import com.fs.starfarer.api.util.Misc;
 
+import esroddisz.Faults;
 import esroddisz.Pricing;
 import esroddisz.Quality;
 import esroddisz.Settings;
@@ -35,13 +36,23 @@ public class ExtraSystemsHullmod extends BaseHullMod {
         float quality = data.getQuality();
         int maxLevel = Settings.maxLevel();
         float strength = Settings.strength();
+        // Each upgrade and augment on its own: one that fails must not cost the ship the others,
+        // nor crash the refit screen or the battle.
         for (Upgrade upgrade : Upgrade.values()) {
             int level = data.getLevel(upgrade);
             if (level <= 0) continue;
-            upgrade.apply(stats, hullSize, Pricing.power(level, maxLevel, quality, strength), id);
+            try {
+                upgrade.apply(stats, hullSize, Pricing.power(level, maxLevel, quality, strength), id);
+            } catch (RuntimeException e) {
+                Faults.report("applying upgrade " + upgrade.getId(), e);
+            }
         }
         for (Augment augment : data.getAugments()) {
-            augment.applyStats(stats, hullSize, id + "_" + augment.getId());
+            try {
+                augment.applyStats(stats, hullSize, id + "_" + augment.getId());
+            } catch (RuntimeException e) {
+                Faults.report("applying augment " + augment.getId(), e);
+            }
         }
     }
 
@@ -51,7 +62,11 @@ public class ExtraSystemsHullmod extends BaseHullMod {
         if (data == null) return;
         List<Augment> combat = new ArrayList<>();
         for (Augment augment : data.getAugments()) {
-            augment.afterShipCreation(ship, id + "_" + augment.getId());
+            try {
+                augment.afterShipCreation(ship, id + "_" + augment.getId());
+            } catch (RuntimeException e) {
+                Faults.report("setting up augment " + augment.getId(), e);
+            }
             if (augment.hasCombatEffect()) combat.add(augment);
         }
         ship.setCustomData(COMBAT_AUGMENTS_KEY, combat);
@@ -63,8 +78,19 @@ public class ExtraSystemsHullmod extends BaseHullMod {
         Object cached = ship.getCustomData().get(COMBAT_AUGMENTS_KEY);
         if (!(cached instanceof List) || ((List<?>) cached).isEmpty()) return;
         if (!ship.isAlive() || ship.isHulk()) return;
-        for (Augment augment : (List<Augment>) cached) {
-            augment.advance(ship, amount);
+        List<Augment> augments = (List<Augment>) cached;
+        for (int i = 0; i < augments.size(); i++) {
+            Augment augment = augments.get(i);
+            try {
+                augment.advance(ship, amount);
+            } catch (RuntimeException e) {
+                // Switch the failing effect off for this ship for the rest of the battle.
+                Faults.report("combat effect of augment " + augment.getId(), e);
+                List<Augment> rest = new ArrayList<>(augments);
+                rest.remove(augment);
+                ship.setCustomData(COMBAT_AUGMENTS_KEY, rest);
+                return;
+            }
         }
     }
 
@@ -76,9 +102,13 @@ public class ExtraSystemsHullmod extends BaseHullMod {
     @Override
     public void addPostDescriptionSection(TooltipMakerAPI tooltip, HullSize hullSize, ShipAPI ship,
                                           float width, boolean isForModSpec) {
-        ShipData data = ship == null ? null : ShipData.forStats(ship.getMutableStats());
-        if (data == null) return;
-        addSummary(tooltip, data, hullSize, 10f);
+        try {
+            ShipData data = ship == null ? null : ShipData.forStats(ship.getMutableStats());
+            if (data == null) return;
+            addSummary(tooltip, data, hullSize, 10f);
+        } catch (RuntimeException e) {
+            Faults.report("hull mod tooltip", e);
+        }
     }
 
     /** Quality, upgrade levels and augments of one ship. Shared with the bay's ship screen. */

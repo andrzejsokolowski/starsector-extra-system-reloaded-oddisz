@@ -54,6 +54,8 @@ import com.fs.starfarer.api.combat.ShipHullSpecAPI;
 import com.fs.starfarer.api.combat.ShipSystemSpecAPI;
 import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.combat.StatBonus;
+import com.fs.starfarer.api.combat.WeaponAPI;
+import com.fs.starfarer.api.combat.WeaponAPI.WeaponSize;
 import com.fs.starfarer.api.combat.WeaponAPI.WeaponType;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.impl.campaign.ids.Stats;
@@ -106,6 +108,7 @@ public class Checks {
         statChecks();
         hullmodChecks();
         syncChecks();
+        robustnessChecks();
         dialogChecks();
         storageAndMaterialChecks();
 
@@ -345,6 +348,50 @@ public class Checks {
         copy.variant.hullMods.add(ExtraSystemsHullmod.ID);
         HullmodSync.sync(copy.proxy);
         check(!copy.current().hasHullMod(ExtraSystemsHullmod.ID), "a hull mod copied by a loadout is removed");
+    }
+
+    private static void robustnessChecks() {
+        // Point Defense Integrator: never leaves a ship with only point defense guns.
+        WeaponAPI smallGun = World.weapon(WeaponType.BALLISTIC, WeaponSize.SMALL, false);
+        WeaponAPI smallBeam = World.weapon(WeaponType.ENERGY, WeaponSize.SMALL, false);
+        WeaponAPI mediumGun = World.weapon(WeaponType.BALLISTIC, WeaponSize.MEDIUM, false);
+        WeaponAPI mediumPd = World.weapon(WeaponType.ENERGY, WeaponSize.MEDIUM, true);
+        WeaponAPI missile = World.weapon(WeaponType.MISSILE, WeaponSize.MEDIUM, false);
+        check(Augment.pdConversions(Arrays.asList(smallGun, smallBeam)).isEmpty(), "a ship of small guns keeps them");
+        check(Augment.pdConversions(Arrays.asList(smallGun, smallBeam, missile)).isEmpty(), "missiles do not count as a main gun");
+        check(Augment.pdConversions(Arrays.asList(smallGun, mediumPd)).isEmpty(), "a point defense medium does not count");
+        List<WeaponAPI> converted = Augment.pdConversions(Arrays.asList(smallGun, smallBeam, mediumGun, missile));
+        check(converted.size() == 2 && converted.contains(smallGun) && converted.contains(smallBeam),
+                "small guns convert when a medium gun remains");
+        check(Augment.pdConversions(null).isEmpty(), "no weapons, no conversions");
+
+        // The background check must survive a ship that throws.
+        World.reset();
+        FleetMemberAPI broken = World.proxy(FleetMemberAPI.class, (m, a) -> {
+            if (m.getName().equals("getId")) throw new IllegalStateException("broken modded ship");
+            return null;
+        });
+        World.Member fine = World.member("r1", "ISS Fine", new World.Hull("fine", HullSize.FRIGATE, ShieldType.FRONT, 0, null, 20000f));
+        World.fleet.add(broken);
+        World.fleet.add(fine.proxy);
+        ShipData.getOrCreate(fine.proxy).setLevel(Upgrade.ENGINES, 1);
+        org.apache.log4j.Logger faultLog = org.apache.log4j.Logger.getLogger(esroddisz.Faults.class);
+        org.apache.log4j.Level before = faultLog.getLevel();
+        faultLog.setLevel(org.apache.log4j.Level.OFF);
+        new HullmodSync().advance(1f);
+        faultLog.setLevel(before);
+        check(fine.current().hasHullMod(ExtraSystemsHullmod.ID), "the other ships are still looked after");
+
+        // Every augment icon is registered so combat can always draw it.
+        try {
+            String settings = new String(Files.readAllBytes(Paths.get("data/config/settings.json")), StandardCharsets.UTF_8);
+            for (Augment a : Augment.values()) {
+                check(settings.contains("\"" + a.getId() + "\":\"" + Augment.iconPath(a) + "\""),
+                        "icon registered in settings.json: " + a.getId());
+            }
+        } catch (java.io.IOException e) {
+            throw new AssertionError(e);
+        }
     }
 
     // ================================================================= dialog
@@ -740,6 +787,17 @@ public class Checks {
                     case "isPlayerOwned": return playerOwned;
                     case "getSubmarket": return storageEnabled ? storage : null;
                     case "getName": return "Testport";
+                    default: return null;
+                }
+            });
+        }
+
+        static WeaponAPI weapon(final WeaponType type, final WeaponSize size, final boolean pd) {
+            return proxy(WeaponAPI.class, (m, a) -> {
+                switch (m.getName()) {
+                    case "getType": return type;
+                    case "getSize": return size;
+                    case "hasAIHint": return pd && a[0] == WeaponAPI.AIHints.PD;
                     default: return null;
                 }
             });

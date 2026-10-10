@@ -3,6 +3,22 @@
 		"esroddisz.rulecmd"
 	],
 
+	# Loaded at startup, so combat can show them in the player ship's status list.
+	"graphics":{
+		"esro":{
+			"esro_overload_damper":"graphics/icons/cargo/esro_overload_damper.png",
+			"esro_nanolattice":"graphics/icons/cargo/esro_nanolattice.png",
+			"esro_cryo_exchanger":"graphics/icons/cargo/esro_cryo_exchanger.png",
+			"esro_temporal_capacitor":"graphics/icons/cargo/esro_temporal_capacitor.png",
+			"esro_phase_coil":"graphics/icons/cargo/esro_phase_coil.png",
+			"esro_pd_integrator":"graphics/icons/cargo/esro_pd_integrator.png",
+			"esro_hangar_forge":"graphics/icons/cargo/esro_hangar_forge.png",
+			"esro_missile_autoforge":"graphics/icons/cargo/esro_missile_autoforge.png",
+			"esro_vent_thrusters":"graphics/icons/cargo/esro_vent_thrusters.png",
+			"esro_range_equalizer":"graphics/icons/cargo/esro_range_equalizer.png"
+		}
+	},
+
 	# Shipbuilding industries the Extra Systems bay works with. A market uses its best working one.
 	#   discount: share taken off every price at that market.
 	#   qualityStep: hull quality added by one improvement (0 means no quality improvements).

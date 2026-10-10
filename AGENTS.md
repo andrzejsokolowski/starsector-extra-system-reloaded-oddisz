@@ -67,6 +67,11 @@ Hence the locked rule below.
 - Story point options: the game spends the point on confirmation, before `optionSelected` runs.
   Give it back if the purchase then fails.
 - Only vanilla sound ids may be played; the checks verify the ones in use.
+- Anything the game calls on its own - stat passes, combat frames, the background hull mod check,
+  option popups, the picker callback - is wrapped so an error is logged once (`Faults`) and switched
+  off instead of crashing the game. Keep new code of that kind wrapped the same way.
+- Point Defense Integrator converts small guns only when a medium or large non-PD gun remains; the AI
+  treats a ship whose guns are all point defense as unarmed and hangs back.
 
 ## Required release workflow
 

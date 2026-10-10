@@ -9,6 +9,7 @@ import com.fs.starfarer.api.combat.ShipVariantAPI;
 import com.fs.starfarer.api.fleet.FleetMemberAPI;
 import com.fs.starfarer.api.loading.VariantSource;
 
+import esroddisz.Faults;
 import esroddisz.ShipData;
 import esroddisz.hullmods.ExtraSystemsHullmod;
 
@@ -38,7 +39,12 @@ public class HullmodSync implements EveryFrameScript {
         CampaignFleetAPI fleet = Global.getSector().getPlayerFleet();
         if (fleet == null || fleet.getFleetData() == null) return;
         for (FleetMemberAPI member : fleet.getFleetData().getMembersListCopy()) {
-            sync(member);
+            // One odd ship, say from another mod, must not stop the campaign.
+            try {
+                sync(member);
+            } catch (RuntimeException e) {
+                Faults.report("keeping the hull mod on " + member.getHullId(), e);
+            }
         }
     }
 

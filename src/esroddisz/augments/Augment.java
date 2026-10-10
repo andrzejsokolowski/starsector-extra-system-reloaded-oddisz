@@ -148,7 +148,8 @@ public enum Augment {
     PD_INTEGRATOR("esro_pd_integrator", "Point Defense Integrator", 250000f,
             materials(Commodities.HAND_WEAPONS, 2, Commodities.RARE_METALS, 2, Commodities.HEAVY_MACHINERY, 1),
             null, null,
-            "Small ballistic and energy weapons act as point defense.",
+            "Small ballistic and energy weapons act as point defense, as long as the ship also mounts a "
+                    + "medium or large gun that is not point defense.",
             "Damage to fighters and missiles +50%.",
             "Point defense weapon range +100.") {
         @Override
@@ -161,13 +162,7 @@ public enum Augment {
 
         @Override
         public void afterShipCreation(ShipAPI ship, String id) {
-            if (ship.getAllWeapons() == null) return;
-            for (WeaponAPI weapon : ship.getAllWeapons()) {
-                if (weapon.getSize() != WeaponSize.SMALL) continue;
-                if (weapon.getType() == WeaponType.BALLISTIC || weapon.getType() == WeaponType.ENERGY) {
-                    weapon.setPD(true);
-                }
-            }
+            for (WeaponAPI weapon : pdConversions(ship.getAllWeapons())) weapon.setPD(true);
         }
     },
 
@@ -404,6 +399,28 @@ public enum Augment {
 
     // ------------------------------------------------------------ helpers
 
+    /**
+     * The small guns the Point Defense Integrator turns into point defense. None at all if that would
+     * leave the ship without a medium or large gun for fighting ships: the AI treats a ship whose guns
+     * are all point defense as having nothing to attack with, and hangs back.
+     */
+    public static List<WeaponAPI> pdConversions(List<WeaponAPI> weapons) {
+        List<WeaponAPI> small = new java.util.ArrayList<>();
+        if (weapons == null) return small;
+        boolean keepsMainGun = false;
+        for (WeaponAPI weapon : weapons) {
+            WeaponType type = weapon.getType();
+            if (type != WeaponType.BALLISTIC && type != WeaponType.ENERGY) continue;
+            if (weapon.getSize() == WeaponSize.SMALL) {
+                small.add(weapon);
+            } else if (!weapon.hasAIHint(WeaponAPI.AIHints.PD)) {
+                keepsMainGun = true;
+            }
+        }
+        if (!keepsMainGun) small.clear();
+        return small;
+    }
+
     static ShipHullSpecAPI hull(MutableShipStatsAPI stats) {
         return stats == null || stats.getVariant() == null ? null : stats.getVariant().getHullSpec();
     }
@@ -458,6 +475,7 @@ public enum Augment {
         engine.maintainStatusForPlayerShip("esro_status_" + augment.id, iconPath(augment), augment.name, text, false);
     }
 
+    /** Every icon is also registered under the "esro" sprite category in settings.json, so it is always loaded. */
     public static String iconPath(Augment augment) {
         return "graphics/icons/cargo/" + augment.id + ".png";
     }

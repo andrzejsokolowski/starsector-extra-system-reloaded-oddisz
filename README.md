@@ -60,7 +60,7 @@ to your cargo.
 | Cryo-Flux Exchanger | Dissipation and vent rate +25%; with shields up, 25% of dissipation also bleeds off hard flux. |
 | Temporal Capacitor | System cooldown and flux cost -50%; systems with charges get +1 charge and twice the regeneration. |
 | Phase Coil Tuner | Phase activation cost, upkeep and cooldown -50%. Phase ships only. |
-| Point Defense Integrator | Small ballistic and energy weapons act as point defense; +50% damage to fighters and missiles; PD range +100. |
+| Point Defense Integrator | Small ballistic and energy weapons act as point defense (only on ships that also mount a medium or large gun, so the AI still fights); +50% damage to fighters and missiles; PD range +100. |
 | Hangar Microforge | Fighter replacement time -40%; replacement rate recovers twice as fast and drains half as fast. Carriers only. |
 | Missile Autoforge | Missile ammunition +25%; every 45 seconds each missile weapon reloads 30% of its ammunition. |
 | Vent Thrusters | Vent rate +30%; while venting, top speed +50%, acceleration +100% and turning +50%. |
