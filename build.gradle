@@ -1,0 +1,229 @@
+plugins {
+    id 'java'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+sourceSets.main.java.srcDirs = ['src']
+sourceSets.test.java.srcDirs = ['test']
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Starsector core (obfuscated game classes + bundled libs: lwjgl, json, log4j, xstream, ...)
+    compileOnly fileTree(dir: "${starsectorPath}/starsector-core", include: '*.jar')
+    // LunaLib supplies the settings page. Found wherever the mod happens to be installed.
+    compileOnly fileTree(dir: "${starsectorPath}/mods", include: '**/LunaLib.jar')
+    testImplementation files(sourceSets.main.compileClasspath)
+}
+
+jar {
+    destinationDirectory = file('jars')
+    archiveFileName = 'ExtraSystemReloadedOddiszEdition.jar'
+}
+
+// Starsector's classloader refuses java.io, java.nio.file and java.lang.reflect to mod code, and the
+// refusal happens at class-resolution time - so a stray import surfaces as a crash somewhere else
+// entirely. Catch it at build time instead by scanning every compiled class's constant pool.
+tasks.register('checkNoForbiddenApis') {
+    dependsOn tasks.named('classes')
+    outputs.upToDateWhen { false }
+    doLast {
+        def forbidden = ['java/io/', 'java/nio/file/', 'java/lang/reflect/']
+        def offenders = []
+        fileTree(dir: layout.buildDirectory.dir('classes/java/main').get().asFile, include: '**/*.class').each { f ->
+            def text = new String(f.bytes, 'ISO-8859-1')
+            forbidden.each { needle ->
+                if (text.contains(needle)) offenders << "${f.name} references ${needle}"
+            }
+        }
+        if (!offenders.isEmpty()) {
+            throw new GradleException("Forbidden API used (Starsector will refuse to load it):\n  " +
+                    offenders.join('\n  '))
+        }
+    }
+}
+
+tasks.named('jar') { dependsOn tasks.named('checkNoForbiddenApis') }
+
+def masterUrl = 'https://raw.githubusercontent.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/main/esr_oddisz.version'
+def downloadUrl = 'https://github.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/releases/latest/download/ExtraSystemReloadedOddiszEdition.zip'
+
+/** mod_info.json, the .version file and the Version Checker registration must agree. */
+tasks.register('checkVersionMetadata') {
+    doLast {
+        def infoFile = file('mod_info.json')
+        def versionFile = file('esr_oddisz.version')
+        def registrationFile = file('data/config/version/version_files.csv')
+        [infoFile, versionFile, registrationFile].each { metadata ->
+            if (!metadata.isFile()) throw new GradleException("Missing update metadata: ${metadata.name}")
+        }
+        def parser = new groovy.json.JsonSlurper()
+        def info = parser.parse(infoFile, 'UTF-8')
+        def remote = parser.parse(versionFile, 'UTF-8')
+        def parts = ['major', 'minor', 'patch'].collect { remote.modVersion?.get(it)?.toString() }
+        if (parts.any { it == null || !(it ==~ /\d+/) } || info.version != parts.join('.'))
+            throw new GradleException('mod_info.json and esr_oddisz.version must have the same numeric version')
+        if (info.id != 'esr_oddisz' || info.name != remote.modName)
+            throw new GradleException('Update metadata must identify Extra System Reloaded - Oddisz Edition')
+        if (info.updateCheckURL != masterUrl || remote.masterVersionFile != masterUrl)
+            throw new GradleException('Both update URLs must point to the published esr_oddisz.version file')
+        if (remote.directDownloadURL != downloadUrl)
+            throw new GradleException('The update download must point to the ExtraSystemReloadedOddiszEdition.zip release asset')
+        if (info.modThreadId?.toString() != remote.modThreadId?.toString())
+            throw new GradleException('mod_info.json and the .version file must name the same forum topic')
+        if (info.gameVersion != remote.starsectorVersion)
+            throw new GradleException('The supported Starsector versions do not match')
+        if (registrationFile.readLines('UTF-8').findAll { !it.trim().isEmpty() } != ['version file', 'esr_oddisz.version'])
+            throw new GradleException('Version Checker must register esr_oddisz.version')
+        logger.lifecycle("Update metadata verified for Extra System Reloaded - Oddisz Edition ${info.version}")
+    }
+}
+
+/**
+ * Checks the files that ship: no UTF-8 BOM (it breaks every Starsector JSON and CSV), every art path
+ * named in data or code exists here or in the base game, every CSV row has the header's column count,
+ * and every augment has its item row and icon.
+ */
+tasks.register('checkReleaseFiles') {
+    doLast {
+        def problems = []
+        fileTree(projectDir) {
+            include 'mod_info.json', '*.version', 'data/**/*.json', 'data/**/*.csv'
+        }.each { f ->
+            def bytes = f.bytes
+            if (bytes.length >= 3 && (bytes[0] & 0xFF) == 0xEF && (bytes[1] & 0xFF) == 0xBB && (bytes[2] & 0xFF) == 0xBF)
+                problems << "UTF-8 BOM in ${projectDir.toPath().relativize(f.toPath())}"
+        }
+
+        def core = file("${starsectorPath}/starsector-core")
+        def artRef = ~/graphics\/[A-Za-z0-9_\-\/. ]+?\.(png|jpg|webp)/
+        fileTree(projectDir) { include 'data/**', 'src/**/*.java' }.each { f ->
+            (f.getText('UTF-8') =~ artRef).each { match ->
+                def path = match[0]
+                if (!file(path).isFile() && !new File(core, path).isFile())
+                    problems << "${projectDir.toPath().relativize(f.toPath())} names missing art ${path}"
+            }
+        }
+
+        def luna = new groovy.json.JsonSlurper().parse(file('data/config/LunaSettingsConfig.json'))
+        if (!luna.containsKey('esr_oddisz')) problems << 'LunaLib icon is not keyed by the mod id'
+        luna.each { modId, config -> if (!file(config.iconPath).isFile()) problems << "LunaLib icon missing: ${config.iconPath}" }
+
+        problems.addAll(esroCheckCsvColumns(file('data/config/LunaSettings.csv')))
+        problems.addAll(esroCheckCsvColumns(file('data/campaign/special_items.csv')))
+        problems.addAll(esroCheckCsvColumns(file('data/hullmods/hull_mods.csv')))
+        problems.addAll(esroCheckCsvColumns(file('data/campaign/rules.csv')))
+        problems.addAll(esroCheckCsvColumns(file('data/campaign/procgen/drop_groups.csv')))
+
+        def itemIds = esroCsvColumn(file('data/campaign/special_items.csv'), 'id') as Set
+        def augmentIds = (file('src/esroddisz/augments/Augment.java').getText('UTF-8') =~ /"(esro_[a-z_]+)", "/).collect { it[1] }
+        if (augmentIds.isEmpty()) problems << 'No augments found in Augment.java'
+        augmentIds.each { id ->
+            if (!itemIds.contains(id)) problems << "Augment ${id} has no row in special_items.csv"
+            if (!file("graphics/icons/cargo/${id}.png").isFile()) problems << "Augment ${id} has no icon"
+        }
+        def drops = esroCsvColumn(file('data/campaign/procgen/drop_groups.csv'), 'commodity')
+        drops.each { entry ->
+            if (entry.startsWith('item_') && !itemIds.contains(entry.substring(5)))
+                problems << "drop_groups.csv drops unknown item ${entry}"
+        }
+
+        if (problems) throw new GradleException("Release files are not ready:\n  " + problems.join('\n  '))
+        logger.lifecycle('Release files verified')
+    }
+}
+
+/** Minimal RFC 4180 reader: handles quoted fields with commas, doubled quotes and line breaks. */
+def esroParseCsv(File f) {
+    def rows = []
+    def row = []
+    def field = new StringBuilder()
+    boolean quoted = false
+    String text = f.getText('UTF-8')
+    int i = 0
+    while (i < text.length()) {
+        char c = text.charAt(i)
+        if (quoted) {
+            if (c == '"' as char) {
+                if (i + 1 < text.length() && text.charAt(i + 1) == '"' as char) { field.append('"'); i++ }
+                else quoted = false
+            } else field.append(c)
+        } else if (c == '"' as char) quoted = true
+        else if (c == ',' as char) { row << field.toString(); field.setLength(0) }
+        else if (c == '\n' as char) { row << field.toString(); field.setLength(0); rows << row; row = [] }
+        else if (c != '\r' as char) field.append(c)
+        i++
+    }
+    if (field.length() > 0 || !row.isEmpty()) { row << field.toString(); rows << row }
+    return rows
+}
+
+def esroCheckCsvColumns(File f) {
+    def rows = esroParseCsv(f)
+    if (rows.isEmpty()) return ["${f.name} is empty"]
+    int width = rows[0].size()
+    def problems = []
+    rows.eachWithIndex { r, idx ->
+        if (r.size() == 1 && r[0].trim().isEmpty()) return
+        if (r.size() != width) problems << "${f.name} row ${idx + 1} has ${r.size()} columns, header has ${width}"
+    }
+    return problems
+}
+
+def esroCsvColumn(File f, String name) {
+    def rows = esroParseCsv(f)
+    int col = rows[0].indexOf(name)
+    return rows.drop(1).findAll { it.size() > col && !it[col].trim().isEmpty() && !it[col].startsWith('#') }.collect { it[col].trim() }
+}
+
+// Standalone checks against mock game objects; never connects to a live game or save.
+tasks.register('regressionTest', JavaExec) {
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'esroddisz.tests.Checks'
+    systemProperty 'starsectorPath', starsectorPath
+    // XStream (the game's save serializer) needs these opened on modern JVMs.
+    jvmArgs '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED',
+            '--add-opens=java.base/java.lang.reflect=ALL-UNNAMED',
+            '--add-opens=java.base/java.text=ALL-UNNAMED', '--add-opens=java.desktop/java.awt.font=ALL-UNNAMED'
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('checkNoForbiddenApis'), tasks.named('checkVersionMetadata'),
+            tasks.named('checkReleaseFiles'), tasks.named('regressionTest')
+}
+// The checks use a standalone harness, not a JUnit engine.
+tasks.named('test') { enabled = false }
+
+// Only what the game loads.
+def releaseFiles = copySpec {
+    from(projectDir) {
+        include 'mod_info.json', 'esr_oddisz.version'
+        include 'data/**', 'graphics/**', 'jars/ExtraSystemReloadedOddiszEdition.jar'
+    }
+}
+
+// Sync, not Copy: files that no longer ship must not linger in the staging folder.
+tasks.register('stageRelease', Sync) {
+    dependsOn tasks.named('jar')
+    with releaseFiles
+    into layout.projectDirectory.dir('ExtraSystemReloadedOddiszEdition')
+}
+
+// Package directly from the source files so stale staging contents cannot enter a release.
+tasks.register('releaseZip', Zip) {
+    dependsOn tasks.named('stageRelease'), tasks.named('check')
+    destinationDirectory = layout.projectDirectory
+    archiveFileName = 'ExtraSystemReloadedOddiszEdition.zip'
+    into('ExtraSystemReloadedOddiszEdition') { with releaseFiles }
+}

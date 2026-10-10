@@ -1,0 +1,24 @@
+{
+	"ruleCommandPackages":[
+		"esroddisz.rulecmd"
+	],
+
+	# Shipbuilding industries the Extra Systems bay works with. A market uses its best working one.
+	#   discount: share taken off every price at that market.
+	#   qualityStep: hull quality added by one improvement (0 means no quality improvements).
+	#   fabricatesAugments: whether augments can be fabricated there.
+	# "industries" matches an industry id exactly; "tags" catches any other industry with that tag,
+	# which covers most modded heavy industries. Pristine and corrupted nanoforges add to the step.
+	"esroShipyards":{
+		"industries":{
+			"heavyindustry":{"discount":0.1, "qualityStep":0.05, "fabricatesAugments":false},
+			"orbitalworks":{"discount":0.15, "qualityStep":0.1, "fabricatesAugments":true},
+			# AoTD - Vaults of Knowledge upgrades of Orbital Works
+			"triheavy":{"discount":0.15, "qualityStep":0.1, "fabricatesAugments":true},
+			"hegeheavy":{"discount":0.15, "qualityStep":0.1, "fabricatesAugments":true}
+		},
+		"tags":{
+			"heavyindustry":{"discount":0.1, "qualityStep":0.05, "fabricatesAugments":false}
+		}
+	}
+}

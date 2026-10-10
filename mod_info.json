@@ -1,0 +1,20 @@
+{
+  "id": "esr_oddisz",
+  "name": "Extra System Reloaded - Oddisz Edition",
+  "author": "Oddisz (after Extra System Reloaded by Originem, Iridescens and President Matt Damon)",
+  "utility": "false",
+  "version": "0.1.0",
+  "description": "Pour credits, materials and story points into the ships you love. Any friendly market with a spaceport has an Extra Systems bay: buy upgrade levels for durability, weapons, targeting, magazines, flux, shields or phase, ship systems, hangars, engines, logistics and combat readiness, raise a hull's quality at shipyards so every upgrade hits harder, and slot rare augments with unique combat effects. Only your ships are ever modified; enemy fleets never get any of it. Costs, strength, limits and slots are all in the LunaLib settings.",
+  "gameVersion": "0.98a-RC8",
+  "jars": ["jars/ExtraSystemReloadedOddiszEdition.jar"],
+  "modPlugin": "esroddisz.ExtraSystemsModPlugin",
+  "updateCheckURL": "https://raw.githubusercontent.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/main/esr_oddisz.version",
+  "originalGameVersion": "0.98a-RC8",
+  "dependencies": [
+    {
+      "id": "lunalib",
+      "name": "LunaLib",
+      "version": { "major": "2", "minor": "0", "patch": "0" }
+    }
+  ]
+}

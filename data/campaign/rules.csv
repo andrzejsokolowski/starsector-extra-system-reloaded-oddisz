@@ -1,0 +1,6 @@
+id,trigger,conditions,script,text,options,notes
+esro_workshopOption,PopulateOptions,"$hasMarket
+$menuState == main
+$tradeMode == OPEN
+RepairAvailable","SetShortcut esro_openWorkshop ""U"" true",,16:esro_openWorkshop:Visit the Extra Systems bay,Shown at friendly markets with a spaceport.
+esro_workshopOpen,DialogOptionSelected,$option == esro_openWorkshop,EsroOpenWorkshop,,,Hands the dialog to esroddisz.dialog.WorkshopDialog.
