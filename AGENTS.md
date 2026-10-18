@@ -6,6 +6,16 @@ For requested gameplay changes and bug fixes, complete the release workflow unle
 Questions, investigations, and instruction-only changes do not require a new version or tag.
 Respect tool approval decisions. These instructions do not change sandbox permissions.
 
+## Notion
+
+Tasks, history and test lists: the **Extra System Reloaded - Oddisz Edition board** in Andrzej's
+Notion, under **Starsector mods** (`collection://29c54c6f-7c35-40af-b60d-2e40ea2b0679`). Working
+rules and game API notes: **Claude Information**
+(`collection://7bf9b1d6-b9e5-4b62-87f1-757bbaa51919`), starting with "Start here: working on
+Starsector mods through Notion". Read the board before working, give every task a ticket (ticket
+ids start with ESR) and keep it current. The Notion tools are deferred: load them with ToolSearch
+first.
+
 ## Releases
 
 Andrzej approved the first public release, 0.1.0, on 2026-10-10. The repository is public. From now on
