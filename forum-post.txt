@@ -10,7 +10,7 @@ WHAT DOES THIS MOD DO?
 
 Every friendly market with a spaceport gets an Extra Systems bay. Pick a ship, buy upgrade levels, raise its hull quality at shipyards, and slot rare augments with effects of their own.
 
-A from-scratch remake of Extra System Reloaded for 0.98a. The code is fully open source. You don't have to credit me. Claude Code built this anyway.
+A from-scratch remake of Extra System Reloaded for 0.98a.
 [color=red]Requires [b]LunaLib[/b].[/color]
 [/b][/center]
 [center]
@@ -51,4 +51,15 @@ Yes. They do not share anything.
 [/spoiler]
 [spoiler=Credits]
 The idea comes from [b]Extra System[/b] by Originem and [b]Extra System Reloaded[/b] by Iridescens and President Matt Damon. This is a new mod written from scratch; none of their code or art is used.
+[/spoiler]
+
+[spoiler=AI use disclaimer]Some or all assets and code in this mod were created using AI tools:
+[list]
+[li]Code: Claude Code (Claude Opus 5.5)[/li]
+[li]Text (readme and this post): Claude Code (Claude Opus 5.5)[/li]
+[li]Icons: Gemini[/li][/list]
+[/spoiler]
+
+[spoiler=License]
+This mod is under the CC0 (Creative Commons Zero) License, allowing you to do whatever you want with the code, without giving any credit to anyone.
 [/spoiler]
