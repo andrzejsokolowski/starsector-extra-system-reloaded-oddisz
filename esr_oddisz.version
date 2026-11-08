@@ -1,5 +1,6 @@
 {
 	"masterVersionFile":"https://raw.githubusercontent.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/main/esr_oddisz.version",
+	"changelogURL":"https://raw.githubusercontent.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/main/changelog.txt",
 	"modName":"Extra System Reloaded - Oddisz Edition",
 	"modThreadId":36143,
 	"modVersion": {

@@ -1,0 +1,17 @@
+Version 0.1.2 (2026-10-10)
+- Point Defense Integrator now only turns small guns into point defense on ships that also mount a medium or large gun, so AI-controlled ships no longer risk hanging back as if unarmed.
+- An error in one upgrade, augment or bay screen no longer crashes the game; that one effect is switched off and logged instead.
+- The Vent Thrusters status in combat always shows its icon.
+
+Version 0.1.1 (2026-10-10)
+- Fixed a crash when opening the Hull Quality tab of the mod's LunaLib settings.
+
+Version 0.1.0 (2026-10-10)
+- First release: a from-scratch Extra System Reloaded for Starsector 0.98a.
+- Extra Systems bay at every friendly market with a spaceport, for ships in your fleet or in storage there.
+- 13 upgrades with 10 levels each, and up to 5 overclock levels past the maximum for a story point each.
+- Hull quality: every hull rolls 80-120%, which multiplies its upgrades; Heavy Industry, Orbital Works and modded shipyards raise it up to 200%.
+- 10 augments with their own combat effects, found in salvage or fabricated at Orbital Works.
+- Pay with credits, materials from cargo and storage, or Industrial Evolution components. Undo any purchase on the same visit; removed levels refund half.
+- Only your ships are ever modified. Enemy fleets never get upgrades or augments.
+- LunaLib settings for levels, strength, quality, augment slots and prices.
