@@ -1,4 +1,4 @@
-[center][img width=220]https://github.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/blob/main/ExtraSystemReloadedIconBig.png?raw=true[/img]
+[center][img width=128]https://raw.githubusercontent.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/main/icon.png[/img]
 [size=28pt][url=https://github.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/releases/latest][b]Extra System Reloaded - Oddisz Edition[/b][/url][/size]
 [url=https://github.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/releases/latest][img]https://img.shields.io/github/downloads/andrzejsokolowski/starsector-extra-system-reloaded-oddisz/total?style=for-the-badge&label=download[/img][/url]  [url=https://github.com/andrzejsokolowski/starsector-extra-system-reloaded-oddisz][img]https://img.shields.io/github/v/release/andrzejsokolowski/starsector-extra-system-reloaded-oddisz?display_name=tag&sort=semver&style=for-the-badge&label=source[/img][/url]
 [/center]

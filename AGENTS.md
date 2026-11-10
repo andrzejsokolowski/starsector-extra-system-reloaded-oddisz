@@ -71,7 +71,7 @@ Hence the locked rule below.
 - `src/esroddisz/dialog/WorkshopDialog` - the Extra Systems bay, opened by the `EsroOpenWorkshop` rule
   command from `data/campaign/rules.csv`.
 - `data/config/settings.json` - `esroShipyards`: shipyard industries by id and by tag.
-- `tools/make_icons.py` - draws every icon in `graphics/` (run with Pillow from the project root).
+- `tools/make_icons.py` - draws the augment and hull mod icons in `graphics/` (run with Pillow from the project root). The mod icon (`icon.png`, `graphics/icons/esr_oddisz_icon.png`) is the gold one from the workspace `mod-icons` folder.
 - `test/esroddisz/tests/Checks` - standalone checks against mock game objects, run by `gradlew check`.
 
 ## Game API traps

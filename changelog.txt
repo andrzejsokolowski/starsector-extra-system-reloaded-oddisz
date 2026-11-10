@@ -1,3 +1,6 @@
+Version 0.1.3 (2026-11-10)
+- New gold icon in mod managers (TriOS) and in LunaLib's settings.
+
 Version 0.1.2 (2026-10-10)
 - Point Defense Integrator now only turns small guns into point defense on ships that also mount a medium or large gun, so AI-controlled ships no longer risk hanging back as if unarmed.
 - An error in one upgrade, augment or bay screen no longer crashes the game; that one effect is switched off and logged instead.

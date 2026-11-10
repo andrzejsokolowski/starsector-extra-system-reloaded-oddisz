@@ -219,7 +219,7 @@ tasks.named('test') { enabled = false }
 // Only what the game loads.
 def releaseFiles = copySpec {
     from(projectDir) {
-        include 'mod_info.json', 'esr_oddisz.version'
+        include 'mod_info.json', 'esr_oddisz.version', 'icon.png'
         include 'data/**', 'graphics/**', 'jars/ExtraSystemReloadedOddiszEdition.jar'
     }
 }

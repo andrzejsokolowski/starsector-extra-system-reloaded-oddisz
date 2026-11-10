@@ -195,10 +195,9 @@ def render(size, accent, glyph, out):
 def main():
     for item_id, color, glyph in AUGMENTS:
         render(80, color, glyph, 'graphics/icons/cargo/%s.png' % item_id)
-    render(128, '#58c8ff', emblem, 'graphics/icons/esr_oddisz_icon.png')
     render(40, '#58c8ff', emblem, 'graphics/hullmods/esro_extra_systems.png')
-    # For the forum post; not part of the mod download.
-    render(256, '#58c8ff', emblem, 'ExtraSystemReloadedIconBig.png')
+    # The mod icon (icon.png and graphics/icons/esr_oddisz_icon.png) is the gold one from
+    # mod-icons in the workspace; this script no longer draws it.
 
 
 if __name__ == '__main__':
