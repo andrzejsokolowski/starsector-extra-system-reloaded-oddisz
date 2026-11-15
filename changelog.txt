@@ -1,3 +1,6 @@
+Version 1.0.0 (2026-11-15)
+- Version 1.0.0: the mod is now considered stable. No gameplay changes.
+
 Version 0.2.0 (2026-11-15)
 - Updated for Starsector 0.98.5a.
 
