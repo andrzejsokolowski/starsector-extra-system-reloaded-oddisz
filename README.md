@@ -10,7 +10,7 @@ get any of it.
 [Forum topic](https://fractalsoftworks.com/forum/index.php?topic=36143.0)
 
 This is a from-scratch remake of the idea behind *Extra System* by Originem and *Extra System
-Reloaded* by Iridescens and President Matt Damon, built for Starsector 0.98a. None of their code or
+Reloaded* by Iridescens and President Matt Damon, built for Starsector 0.98.5a. None of their code or
 art is used.
 
 ## Upgrades

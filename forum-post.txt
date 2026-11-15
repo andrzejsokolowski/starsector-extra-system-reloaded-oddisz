@@ -10,7 +10,7 @@ WHAT DOES THIS MOD DO?
 
 Every friendly market with a spaceport gets an Extra Systems bay. Pick a ship, buy upgrade levels, raise its hull quality at shipyards, and slot rare augments with effects of their own.
 
-A from-scratch remake of Extra System Reloaded for 0.98a.
+A from-scratch remake of Extra System Reloaded for Starsector 0.98.5a.
 [color=red]Requires [b]LunaLib[/b].[/color]
 [/b][/center]
 [center]
